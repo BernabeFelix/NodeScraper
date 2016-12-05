@@ -4,6 +4,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var mongoose = require('mongoose');
+var apiRoutes = require('./app/apiRoutes')
 
 // configuration ===========================================
 
@@ -14,11 +15,22 @@ var db = require('./config/db');
 var port = process.env.PORT || 8080;
 
 // connect to our mongoDB database 
-// (uncomment after you enter in your own credentials in config/db.js)
-mongoose.connect(db.url);
+mongoose.connect(db.uri, db.options);
+var conn = mongoose.connection;
+
+conn.on('error', console.error.bind(console, 'connection error:'));
+
+conn.once('open', function () {
+  // Wait for the database connection to establish, then start the app.   
+  // startup our app at http://localhost:8080 
+  app.listen(port, function () {
+    // shoutout to the user
+    console.log('Magic happens on port ' + port);
+  });
+});
 
 // get all data/stuff of the body (POST) parameters
-// parse application/json 
+// parse application/json ffff
 app.use(bodyParser.json());
 
 // parse application/vnd.api+json as json
@@ -38,14 +50,12 @@ app.use(methodOverride('X-HTTP-Method-Override'));
 app.use(express.static(__dirname + '/public'));
 
 // routes ==================================================
-require('./app/routes')(app); // configure our routes
-
+// configure our routes
+app.use('/api', apiRoutes);
+app.use('*', function (req, res) {
+  console.log('angular');
+  res.sendfile('./public/views/index.html'); // load our public/index.html file
+});
 // start app ===============================================
-// startup our app at http://localhost:8080
-app.listen(port);
-
-// shoutout to the user                     
-console.log('Magic happens on port ' + port);
-
 // expose app           
 exports = module.exports = app;
