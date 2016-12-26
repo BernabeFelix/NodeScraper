@@ -30,7 +30,7 @@ conn.once('open', function () {
 });
 
 // get all data/stuff of the body (POST) parameters
-// parse application/json ffff
+// parse application/json
 app.use(bodyParser.json());
 
 // parse application/vnd.api+json as json
