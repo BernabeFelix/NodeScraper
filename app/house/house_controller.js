@@ -29,45 +29,88 @@ module.exports = {
   },
 
   getHouses: function (req, res) {
-    countHousesByDay(res)
-      .then(function (jsonToReturn) {
+    House.find(evaluateRequest(req.query))
+      .limit(52)
+      .sort('-date')
+      .exec()
+      .then(houses => {
+        let jsonToReturn = {};
+        jsonToReturn.houses = houses;
+        // jsonToReturn.housesByDay = getHousesByDay(req.body, houses);
         res.json(jsonToReturn);
         res.end();
       })
-
-
   },
 
-  updateHouses: updateHouses
+  updateHouses: updateHouses,
+  deleteHouses: function (req, res) {
+    House.remove({}, function (err) {
+      if (err) {
+        console.log('an error hapened deleting houses: ', JSON.stringify(err));
+        res.json({
+          status: 'error'
+        });
+        res.end();
+        return;
+      }
 
-};
-
-function updateHouses(req, res) {
-  function addHouses(houses) {
-    houses.forEach(house => {
-      console.log(house.ad.ad_id);
-      new House({
-        _id: house.ad.ad_id,
-        name: house.ad.subject,
-        date: new Date(house.ad.list_time.value),
-        price: house.ad.list_price.prince_value,
-        currency: house.ad.list_price.currency
-      }).save((error, data) => {
-        if (error) {
-          console.log('an error hapened creating a house: ', JSON.stringify(error));
-        }
-      })
+      res.json({
+        status: 'success'
+      });
+      res.end();
     });
   }
 
-  function filterHouses(houses) {
-    let housesFilteredByCompany = houses.list_ads.filter(house => !house.ad.company_ad);
+};
 
-    addHouses(housesFilteredByCompany);
+function evaluateRequest(query) {
+  let options = {};
+  // Optional
+  if (query.hasOwnProperty('fromCompany')) {
+    options.isFromCompany = query.fromCompany;
+  }
+
+  options.date = {
+    $lte: query.dateFrom || new Date(),
+    $gte: query.dateTo || 0
+  };
+
+  return options;
+}
+
+function updateHouses(req, res) {
+  function addHouses(houses) {
+    let nHouses = houses.list_ads.reduce((counter, house) => {
+      // console.log(house.ad);
+      new House({
+        _id: house.ad.ad_id,
+        date: new Date(house.ad.list_time.value * 1000),
+        currency: house.ad.list_price ? house.ad.list_price.currency : 'MXN',
+        isFromCompany: house.ad.company_ad,
+        name: house.ad.subject,
+        price: house.ad.list_price ? house.ad.list_price.price_value : 0
+      }).save((error) => {
+        // duplicate id
+        if (error && error.code !== 11000) {
+          console.log('an error hapened creating a house: ', JSON.stringify(error));
+        }
+      })
+
+      return ++counter;
+    }, 0);
 
     return {
-      status: 'success'
+      status: 'success',
+      houses: nHouses
     };
+  }
+
+  if (!req.body.limit || req.body.limit < 1) {
+    res.json({
+      status: 'error',
+      devMsg: 'limit parameter is missing in body'
+    });
+    res.end();
   }
 
   return rp({
@@ -78,69 +121,42 @@ function updateHouses(req, res) {
         lang: 'es',
         category: categories.forSale,
         region: regions.jalisco,
-        lim: 10
+        lim: req.body.limit,
+        sort: 'date'
       }
     })
-    .then(filterHouses, handleError)
+    .then(addHouses, handleError)
     .then(houses => {
       res.json(houses);
       res.end();
     })
 }
 
+function getHousesByDay(reqBody, houses) {
+  let dates = [],
+    datesWithCounter = [];
 
-function countHousesByDay(res) {
-  return rp({
-    json: true,
-    method: 'GET',
-    url: 'https://gist.githubusercontent.com/BernabeFelix/f0ef9c5246a8f1e048eaac5625331537/raw/d1b2f2170bb37f084714eefef6c345f2bba33e8b/firstTenThousandHouses.json',
-    qs: {
-      lang: 'es',
-      category: categories.forSale,
-      region: regions.guadalajara,
-      lim: 10000
-    }
-  }).then(function (firstTenThousandHouses) {
-    // console.log(response);
-    let dates = [],
-      datesWithCounter = [];
-    let totalCounter = 0;
-    let adIds = [],
-      listIds = [];
+  houses.forEach(function (house) {
+    let indexOfDate = 0;
 
-    // firstTenThousandHouses = JSON.parse(firstTenThousandHouses);
+    indexOfDate = dates.indexOf(house.date.toDateString());
 
-    firstTenThousandHouses.list_ads.forEach(function (house) {
-      const ad = house.ad;
-      let indexOfDate = 0;
-      let date = '';
-
-      if (!ad.company_ad) {
-        totalCounter++;
-
-        date = new Date(ad.list_time.value * 1000).toDateString();
-        indexOfDate = dates.indexOf(date);
-
-
-        if (indexOfDate === -1) {
-          dates.push(date);
-          datesWithCounter.push({
-            'date': date,
-            'counter': 1
-          });
-        } else {
-          datesWithCounter[indexOfDate].counter++;
-        }
-
-      }
-    });
-
-    return {
-      'dates': datesWithCounter,
-      'totalDates': totalCounter
+    if (indexOfDate === -1) {
+      dates.push(house.date.toDateString());
+      datesWithCounter.push({
+        'date': house.date.toDateString(),
+        'counter': 1
+      });
+    } else {
+      datesWithCounter[indexOfDate].counter++;
     }
 
-  }, handleError);
+  });
+
+  return {
+    'dates': datesWithCounter,
+    'totalHouses': houses.length
+  }
 }
 
 function handleError(error) {

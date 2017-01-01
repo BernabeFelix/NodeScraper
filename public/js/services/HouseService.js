@@ -1,11 +1,19 @@
 (function () {
   angular.module('HouseService', [])
-    .factory('House', ['$http', function ($http) {
+    .factory('houseService', ['$http', function ($http) {
 
       return {
         // call to get all houses
-        get: function () {
-          return $http.get('/api/houses/');
+        get: function (dateFrom = new Date(), dateTo = 0) {
+          return $http({
+              method: 'GET',
+              params: {
+                dateFrom,
+                dateTo
+              },
+              url: '/api/houses/'
+            })
+            .then(response => response.data, error => []);
         },
 
 

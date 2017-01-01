@@ -1,5 +1,91 @@
 <div class="jumbotron text-center">
-    <h1>Nerds and Proud</h1>
+    <h1>Houses from SegundaMano</h1>
+    
+</div>
 
-    <p>{{ tagline }}</p>
+<div class="container">
+
+  <!-- orderBy  -->
+  <div class="row">
+    <div class="col-xs-1">
+      <span>Ordernar Por: </span>
+    </div>
+    <div class="col-xs-1">
+      <button class="btn btn-success" ng-click="">
+        Precio
+      </button>
+    </div>
+    <div class="col-xs-1">
+      <button class="btn btn-success" ng-click="">
+        Fecha
+      </button>
+    </div>
+  </div>
+
+  <!-- Quantity to show -->
+  <!-- <div class="row">
+    <div class="col-xs-12">
+      <label for="quantitySelector">Casas a mostrar</label>
+      <select name="quantitySelector" id="">
+        <option value="10">10</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+  </div> -->
+    
+  <!-- houses -->
+	<div class="row" ng-repeat="house in houseVm.houses" ng-if="$index % 4 === 0">
+	  <div class="col-xs-12 col-md-6 col-lg-3">
+	    <div class="thumbnail">
+        <img src="http://placehold.it/242x200" alt="">
+	      <div class="caption">
+          <h4>{{house.name}}</h4>
+          <p>Price: {{house.price | currency}} {{house.currency}}</p>
+          <p>Fecha: {{house.date | date: 'd/M/yy'}} </p>
+        </div>
+	    </div>
+    </div>
+
+    <div class="col-xs-12 col-md-6 col-lg-3" ng-show="houseVm.houses[$index+1]">
+      <div class="thumbnail">
+        <img src="http://placehold.it/242x200" alt="">
+        <div class="caption">
+          <h4>{{houseVm.houses[$index+1].name}}</h4>
+          <p>Price: {{houseVm.houses[$index+1].price | currency}} {{houseVm.houses[$index+1].currency}}</p>
+          <p>Fecha: {{houseVm.houses[$index+1].date | date: 'd/M/yy'}} </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-12 col-md-6 col-lg-3" ng-show="houseVm.houses[$index+2]">
+      <div class="thumbnail">
+        <img src="http://placehold.it/242x200" alt="">
+        <div class="caption">
+          <h4>{{houseVm.houses[$index+2].name}}</h4>
+          <p>Price: {{houseVm.houses[$index+2].price | currency}} {{houseVm.houses[$index+2].currency}}</p>
+          <p>Fecha: {{houseVm.houses[$index+2].date | date: 'd/M/yy'}} </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-12 col-md-6 col-lg-3" ng-show="houseVm.houses[$index+3]">
+      <div class="thumbnail">
+        <img src="http://placehold.it/242x200" alt="">
+        <div class="caption">
+          <h4>{{houseVm.houses[$index+3].name}}</h4>
+          <p>Price: {{houseVm.houses[$index+3].price | currency}} {{houseVm.houses[$index+3].currency}}</p>
+          <p>Fecha: {{houseVm.houses[$index+3].date | date: 'd/M/yy'}} </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pager -->
+  <nav aria-label="pagination for houses">
+    <ul class="pager">
+      <li><a href="#" ng-click="houseVm.back()" ng-hide="">Anterior</a></li>
+      <li><a href="#" ng-click="houseVm.next()" ng-hide="">Siguiente</a></li>
+    </ul>
+  </nav>
 </div>

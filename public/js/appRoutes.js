@@ -12,7 +12,8 @@
       // nerds page that will use the NerdController
       .when('/houses', {
         templateUrl: 'views/house.html',
-        controller: 'HouseController'
+        controller: 'HouseController',
+        controllerAs: 'houseVm'
       });
 
       $locationProvider.html5Mode(true);
