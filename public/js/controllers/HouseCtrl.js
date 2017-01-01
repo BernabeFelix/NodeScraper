@@ -5,28 +5,35 @@
   function HouseController(houseService) {
     let vm = this;
 
-    vm.dateFrom = new Date();
-    vm.dateTo = 0;
-    vm.getHouses = getHouses;
+    // data
     vm.houses = getHouses();
-    vm.next = next;
+    vm.currentPage = 1;
+    // functions
     vm.back = back;
+    vm.getHouses = getHouses;
+    vm.next = next;
+    // utils
 
-    function getHouses() {
-      console.log('getHouses called');
-      houseService.get(vm.dateFrom, vm.dateTo).then(houses => {
+    function getHouses(dateFrom, dateTo, sort, reverse) {
+      houseService.get(dateFrom, dateTo, sort).then(houses => {
+        if (reverse) {
+          houses.houses = houses.houses.reverse();
+        }
         vm.houses = houses.houses;
+        console.log(`Page ${vm.currentPage}: ` + vm.houses[0].name);
+        console.log(`Page ${vm.currentPage}: ` + vm.houses[vm.houses.length - 1].name);
       });
     }
 
     function next() {
-      vm.dateFrom = vm.houses[vm.houses.length - 1].date;
-      getHouses();
+      vm.currentPage++;
+      getHouses(vm.houses[vm.houses.length - 1].date);
+
     }
 
     function back() {
-      vm.dateTo = vm.houses[0].date;
-      getHouses();
+      vm.currentPage--;
+      getHouses(undefined, vm.houses[0].date, 'date', true);
     }
   }
 })();

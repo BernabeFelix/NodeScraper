@@ -84,8 +84,8 @@
   <!-- Pager -->
   <nav aria-label="pagination for houses">
     <ul class="pager">
-      <li><a href="#" ng-click="houseVm.back()" ng-hide="">Anterior</a></li>
-      <li><a href="#" ng-click="houseVm.next()" ng-hide="">Siguiente</a></li>
+      <li><a href="#" ng-click="houseVm.back()" ng-hide="houseVm.currentPage === 1">Anterior</a></li>
+      <li><a href="#" ng-click="houseVm.next()" ng-hide="houseVm.houses.length < 52">Siguiente</a></li>
     </ul>
   </nav>
 </div>

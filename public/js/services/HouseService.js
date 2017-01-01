@@ -4,12 +4,13 @@
 
       return {
         // call to get all houses
-        get: function (dateFrom = new Date(), dateTo = 0) {
+        get: function (dateFrom, dateTo, sort) {
           return $http({
               method: 'GET',
               params: {
                 dateFrom,
-                dateTo
+                dateTo,
+                sort
               },
               url: '/api/houses/'
             })

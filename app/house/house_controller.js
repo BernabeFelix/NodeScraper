@@ -31,7 +31,7 @@ module.exports = {
   getHouses: function (req, res) {
     House.find(evaluateRequest(req.query))
       .limit(52)
-      .sort('-date')
+      .sort(req.query.sort || '-date')
       .exec()
       .then(houses => {
         let jsonToReturn = {};
@@ -64,16 +64,29 @@ module.exports = {
 };
 
 function evaluateRequest(query) {
-  let options = {};
+  let options = {},
+    date = {};
   // Optional
   if (query.hasOwnProperty('fromCompany')) {
     options.isFromCompany = query.fromCompany;
   }
 
-  options.date = {
-    $lte: query.dateFrom || new Date(),
-    $gte: query.dateTo || 0
-  };
+  /**
+   * the request should have either dateFrom or dateTo
+   * if none, default is added
+   */
+  if (query.dateFrom) {
+    date.$lte = query.dateFrom;
+  } else if (query.dateTo) {
+    date.$gte = query.dateTo;
+  }
+  if (Object.keys(date).length === 0) {
+    date = {
+      $lte: new Date()
+    }
+  }
+
+  options.date = date;
 
   return options;
 }
